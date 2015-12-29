@@ -196,7 +196,7 @@ describe('', function() {
         });
       });
 
-      xit('Returns all of the links to display on the links page', function(done) {
+      it('Returns all of the links to display on the links page', function(done) {
         var options = {
           'method': 'GET',
           'uri': 'http://127.0.0.1:4568/links'
@@ -286,7 +286,7 @@ describe('', function() {
 
   }); // 'Account Creation'
 
-  xdescribe('Account Login:', function(){
+  describe('Account Login:', function(){
 
     var requestWithSession = request.defaults({jar: true});
 

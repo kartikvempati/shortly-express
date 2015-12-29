@@ -2,7 +2,7 @@ var express = require('express');
 var util = require('./lib/utility');
 var partials = require('express-partials');
 var bodyParser = require('body-parser');
-var sessions = require('express-session');
+var session = require('express-session');
 
 
 var db = require('./app/config');
@@ -13,7 +13,7 @@ var Link = require('./app/models/link');
 var Click = require('./app/models/click');
 
 var app = express();
-app.use(sessions({secret: "nyan", cookie: {}, resave: false, saveUninitialized: false }));
+app.use(session({secret: "nyan", cookie: {}, resave: false, saveUninitialized: false }));
 
 app.set('views', __dirname + '/views');
 app.set('view engine', 'ejs');
@@ -45,7 +45,7 @@ app.use(express.static(__dirname + '/public'));
 
 var checkUser = function (req, res, next) {
    var cookie = req.session.login;
-   console.log(req.session.login)
+   console.log(req.session.login);
    if (cookie) {
     next();
    }
@@ -76,7 +76,7 @@ function(req, res) {
   var uri = req.body.url;
 
   if (!util.isValidUrl(uri)) {
-    // console.log('Not a valid url: ', uri);
+    console.log('Not a valid url: ', uri);
     return res.send(404);
   }
 
@@ -109,12 +109,12 @@ function(req, res) {
 // Write your authentication routes here
 /************************************************************/
 app.get('/login', function(req, res){
-  res.render('login')
+  res.render('login');
 });
 
 app.get('/signup', function(req, res){
-  res.render('signup')
-})
+  res.render('signup');
+});
 
 app.post('/signup', function(req, res){
   var username = req.body.username;
@@ -124,17 +124,16 @@ app.post('/signup', function(req, res){
 
   new User({ 'username': username, 'password': password }).fetch().then(function(found) {
 
-
       Users.create({
         'username': username,
         'password': password
       })
       .then(function(newUser) {
         //write cookie
-        res.session.login = username;
+        req.session.login = username;
+        console.log(res.session);
         res.redirect('/');
       });
-    
   });
 
 });
@@ -144,9 +143,28 @@ app.post('/login', function(req, res){
   var username = req.body.username;
   var password = req.body.password;
 
-  //WRITE A COOKIE
-  //REDIRECT TO INDEX
-})
+  new User({ 'username': username, 'password': password }).fetch().then(function(user) {
+
+
+    if(user){
+      //check password
+      if(user.get('password') == password){
+        req.session.login = username;
+        console.log(res.session);
+        res.redirect('/');
+      }
+      else{
+        // WRONG PASSWORD
+        res.redirect('/login');
+      }
+    }
+    else{
+      // USERNAME DOESNT EXIST
+      res.redirect('/login');
+    }
+    
+  });  
+});
 // app.post('/login', middleware(),function(req, res){
 //   //get username, password from the request body
 //   //check if username exists
