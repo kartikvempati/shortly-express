@@ -2,6 +2,7 @@ var express = require('express');
 var util = require('./lib/utility');
 var partials = require('express-partials');
 var bodyParser = require('body-parser');
+var sessions = require('express-session');
 
 
 var db = require('./app/config');
@@ -16,24 +17,53 @@ var app = express();
 app.set('views', __dirname + '/views');
 app.set('view engine', 'ejs');
 app.use(partials());
+app.use(sessions({secret: "nyan", cookie: {}, resave: false, saveUninitialized: false }));
 // Parse JSON (uniform resource locators)
 app.use(bodyParser.json());
 // Parse forms (signup/login)
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(express.static(__dirname + '/public'));
 
+/*
+  checks cookie header if logged in
+  if true, call next
+  else, res.redirect('login')
+  
+*/
 
-app.get('/', 
+// function parseCookies (request) {
+//     var list = {},
+//         rc = request.headers.cookie;
+
+//     rc && rc.split(';').forEach(function( cookie ) {
+//         var parts = cookie.split('=');
+//         list[parts.shift().trim()] = decodeURI(parts.join(''));
+//     });
+
+//     return list;
+// }
+
+var checkUser = function (req, res, next) {
+   var cookie = req.sessions.cookie.login;
+   if (cookie) {
+    next();
+   }
+   else {
+    res.redirect(404,'/login');
+   }
+};
+
+app.get('/', checkUser,
 function(req, res) {
   res.render('index');
 });
 
-app.get('/create', 
+app.get('/create', checkUser,
 function(req, res) {
   res.render('index');
 });
 
-app.get('/links', 
+app.get('/links', checkUser,
 function(req, res) {
   Links.reset().fetch().then(function(links) {
     res.send(200, links.models);
@@ -45,7 +75,7 @@ function(req, res) {
   var uri = req.body.url;
 
   if (!util.isValidUrl(uri)) {
-    console.log('Not a valid url: ', uri);
+    // console.log('Not a valid url: ', uri);
     return res.send(404);
   }
 
@@ -72,10 +102,24 @@ function(req, res) {
   });
 });
 
+
+
 /************************************************************/
 // Write your authentication routes here
 /************************************************************/
-
+app.get('/login', function(req, res){
+  res.render('login')
+});
+app.post('/login', middleware(),function(req, res){
+  //get username, password from the request body
+  //check if username exists
+    // if it does
+    // check password matches in db
+      //if it does
+      // render index, create cookie for user
+      // if it doesn't
+      // go back to /login  
+});
 
 
 /************************************************************/
