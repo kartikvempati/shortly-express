@@ -44,12 +44,12 @@ app.use(express.static(__dirname + '/public'));
 // }
 
 var checkUser = function (req, res, next) {
-   var cookie = req.sessions.cookie.login;
-   if (cookie) {
+   var cookie = req.session.cookie.login;
+   if (cookie !== undefined) {
     next();
    }
    else {
-    res.redirect(404,'/login');
+    res.redirect('/login');
    }
 };
 
@@ -110,16 +110,16 @@ function(req, res) {
 app.get('/login', function(req, res){
   res.render('login')
 });
-app.post('/login', middleware(),function(req, res){
-  //get username, password from the request body
-  //check if username exists
-    // if it does
-    // check password matches in db
-      //if it does
-      // render index, create cookie for user
-      // if it doesn't
-      // go back to /login  
-});
+// app.post('/login', middleware(),function(req, res){
+//   //get username, password from the request body
+//   //check if username exists
+//     // if it does
+//     // check password matches in db
+//       //if it does
+//       // render index, create cookie for user
+//       // if it doesn't
+//       // go back to /login  
+// });
 
 
 /************************************************************/
