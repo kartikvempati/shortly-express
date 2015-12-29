@@ -3,7 +3,7 @@ var util = require('./lib/utility');
 var partials = require('express-partials');
 var bodyParser = require('body-parser');
 var session = require('express-session');
-
+var crypto = require('crypto');
 
 var db = require('./app/config');
 var Users = require('./app/collections/users');
@@ -145,14 +145,18 @@ app.post('/signup', function(req, res){
 
 
 app.post('/login', function(req, res){
+  var shasum = crypto.createHash('sha1');
   var username = req.body.username;
   var password = req.body.password;
+  shasum.update(password);
+  password = shasum.digest('hex').slice(0, 10)
 
   new User({ 'username': username, 'password': password }).fetch().then(function(user) {
 
 
     if(user){
       //check password
+
       if(user.get('password') == password){
         req.session.login = username;
         console.log(res.session);
