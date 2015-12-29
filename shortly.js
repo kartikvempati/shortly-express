@@ -13,11 +13,11 @@ var Link = require('./app/models/link');
 var Click = require('./app/models/click');
 
 var app = express();
+app.use(sessions({secret: "nyan", cookie: {}, resave: false, saveUninitialized: false }));
 
 app.set('views', __dirname + '/views');
 app.set('view engine', 'ejs');
 app.use(partials());
-app.use(sessions({secret: "nyan", cookie: {}, resave: false, saveUninitialized: false }));
 // Parse JSON (uniform resource locators)
 app.use(bodyParser.json());
 // Parse forms (signup/login)
@@ -44,8 +44,9 @@ app.use(express.static(__dirname + '/public'));
 // }
 
 var checkUser = function (req, res, next) {
-   var cookie = req.session.cookie.login;
-   if (cookie !== undefined) {
+   var cookie = req.session.login;
+   console.log(req.session.login)
+   if (cookie) {
     next();
    }
    else {
@@ -110,6 +111,42 @@ function(req, res) {
 app.get('/login', function(req, res){
   res.render('login')
 });
+
+app.get('/signup', function(req, res){
+  res.render('signup')
+})
+
+app.post('/signup', function(req, res){
+  var username = req.body.username;
+  var password = req.body.password;
+
+
+
+  new User({ 'username': username, 'password': password }).fetch().then(function(found) {
+
+
+      Users.create({
+        'username': username,
+        'password': password
+      })
+      .then(function(newUser) {
+        //write cookie
+        res.session.login = username;
+        res.redirect('/');
+      });
+    
+  });
+
+});
+
+
+app.post('/login', function(req, res){
+  var username = req.body.username;
+  var password = req.body.password;
+
+  //WRITE A COOKIE
+  //REDIRECT TO INDEX
+})
 // app.post('/login', middleware(),function(req, res){
 //   //get username, password from the request body
 //   //check if username exists
