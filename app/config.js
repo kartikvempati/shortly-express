@@ -58,4 +58,15 @@ db.knex.schema.hasTable('users').then(function(exists) {
   }
 });
 
+db.knex.schema.hasTable('profiles').then(function(exists) {
+  if (!exists) {
+    db.knex.schema.createTable('profiles', function (user) {
+      user.increments('id').primary();
+      user.string('email')
+    }).then(function (table) {
+      console.log('Created Table', table);
+    });
+  }
+});
+
 module.exports = db;
